@@ -43,7 +43,7 @@ struct check_data {
 	};
 };
 
-#define PLUGIN_VERSION	"v0.10-beta4"
+#define PLUGIN_VERSION	"v0.10-beta5"
 #define PLUGIN_AUTHOR	"sigma-axis"
 #define FILTER_INFO_FMT(name, ver, author)	(name##" "##ver##" by "##author)
 #define FILTER_INFO(name)	constexpr char filter_name[] = name, info[] = FILTER_INFO_FMT(name, PLUGIN_VERSION, PLUGIN_AUTHOR)
@@ -57,7 +57,7 @@ constexpr int32_t
 	track_min_drag[]	= { -100,    0,    0, -1000, -3600 },
 	track_def[]			= {   30,  500,  500,     0,  -450 },
 	track_max_drag[]	= { +100, 1000, 1000, +1000, +3600 },
-	track_max[]			= { +100, 5000, 1000, +1000, +7200 };
+	track_max[]			= { +100, 5000, 5000, +1000, +7200 };
 
 namespace idx_track
 {
@@ -475,6 +475,7 @@ BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip)
 		den_alpha_dec	= track_den[idx_track::alpha],
 		min_alpha_dec	= track_min[idx_track::alpha],
 		max_alpha_dec	= track_max[idx_track::alpha],
+		full_alpha_dec	= track_max_drag[idx_track::alpha],
 
 		den_balance		= track_den[idx_track::balance],
 		min_balance		= track_min[idx_track::balance],
@@ -491,10 +492,10 @@ BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip)
 			* abs_size / (100 * den_blur_rate), len_rest - abs_size),
 		alpha = std::clamp(efp->track[idx_track::alpha], min_alpha_dec, max_alpha_dec),
 		balance = std::clamp(efp->track[idx_track::balance], min_balance, max_balance),
-		alpha_l = balance >= 0 ? alpha * max_alpha / max_alpha_dec :
-			static_cast<int>(static_cast<uint32_t>((balance - min_balance) * alpha * max_alpha) / uint32_t{ -min_balance * max_alpha_dec }),
-		alpha_d = balance <= 0 ? alpha * max_alpha / max_alpha_dec :
-			static_cast<int>(static_cast<uint32_t>((max_balance - balance) * alpha * max_alpha) / uint32_t{ +max_balance * max_alpha_dec }),
+		alpha_l = balance >= 0 ? alpha * max_alpha / full_alpha_dec :
+			static_cast<int>((int64_t{ balance - min_balance } *alpha * max_alpha) / (-min_balance * full_alpha_dec)),
+		alpha_d = balance <= 0 ? alpha * max_alpha / full_alpha_dec :
+			static_cast<int>((int64_t{ max_balance - balance } *alpha * max_alpha) / (+max_balance * full_alpha_dec)),
 		angle = std::clamp(efp->track[idx_track::angle], min_angle, max_angle);
 
 	// handle trivial cases.
@@ -529,7 +530,7 @@ BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip)
 			if (light == 0 || src.a >= max_alpha) return src;
 
 			auto col = light > 0 ? light_color : shadow_color;
-			int a = (light > 0 ? alpha_l * light : alpha_d * (-light)) >> log2_max_alpha;
+			int a = std::max((light > 0 ? alpha_l * light : alpha_d * (-light)) >> log2_max_alpha, 0);
 			int A = src.a;
 			if (A <= 0) return { .y = col.y, .cb = col.cb, .cr = col.cr, .a = static_cast<i16>(a) };
 
@@ -545,7 +546,7 @@ BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip)
 			if (light == 0) return { .a = 0 };
 
 			auto col = light > 0 ? light_color : shadow_color;
-			auto a = (light > 0 ? alpha_l * light : alpha_d * (-light)) >> log2_max_alpha;
+			auto a = std::max((light > 0 ? alpha_l * light : alpha_d * (-light)) >> log2_max_alpha, 0);
 			return { .y = col.y, .cb = col.cb, .cr = col.cr, .a = static_cast<i16>(a) };
 		};
 
