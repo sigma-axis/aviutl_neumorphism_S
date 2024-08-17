@@ -43,7 +43,7 @@ struct check_data {
 	};
 };
 
-#define PLUGIN_VERSION	"v1.00"
+#define PLUGIN_VERSION	"v1.01-beta1"
 #define PLUGIN_AUTHOR	"sigma-axis"
 #define FILTER_INFO_FMT(name, ver, author)	(name##" "##ver##" by "##author)
 #define FILTER_INFO(name)	constexpr char filter_name[] = name, info[] = FILTER_INFO_FMT(name, PLUGIN_VERSION, PLUGIN_AUTHOR)
@@ -530,7 +530,7 @@ BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip)
 			if (light == 0 || src.a >= max_alpha) return src;
 
 			auto col = light > 0 ? light_color : shadow_color;
-			int a = std::max((light > 0 ? alpha_l * light : alpha_d * (-light)) >> log2_max_alpha, 0);
+			int a = std::min((light > 0 ? alpha_l * light : alpha_d * (-light)) >> log2_max_alpha, max_alpha);
 			int A = src.a;
 			if (A <= 0) return { .y = col.y, .cb = col.cb, .cr = col.cr, .a = static_cast<i16>(a) };
 
@@ -546,7 +546,7 @@ BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip)
 			if (light == 0) return { .a = 0 };
 
 			auto col = light > 0 ? light_color : shadow_color;
-			auto a = std::max((light > 0 ? alpha_l * light : alpha_d * (-light)) >> log2_max_alpha, 0);
+			auto a = std::min((light > 0 ? alpha_l * light : alpha_d * (-light)) >> log2_max_alpha, max_alpha);
 			return { .y = col.y, .cb = col.cb, .cr = col.cr, .a = static_cast<i16>(a) };
 		};
 
