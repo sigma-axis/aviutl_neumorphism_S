@@ -43,7 +43,7 @@ struct check_data {
 	};
 };
 
-#define PLUGIN_VERSION	"v1.02-beta1"
+#define PLUGIN_VERSION	"v1.10"
 #define PLUGIN_AUTHOR	"sigma-axis"
 #define FILTER_INFO_FMT(name, ver, author)	(name##" "##ver##" by "##author)
 #define FILTER_INFO(name)	constexpr char filter_name[] = name, info[] = FILTER_INFO_FMT(name, PLUGIN_VERSION, PLUGIN_AUTHOR)
