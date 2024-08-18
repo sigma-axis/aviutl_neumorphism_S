@@ -43,7 +43,7 @@ struct check_data {
 	};
 };
 
-#define PLUGIN_VERSION	"v1.01"
+#define PLUGIN_VERSION	"v1.02-beta1"
 #define PLUGIN_AUTHOR	"sigma-axis"
 #define FILTER_INFO_FMT(name, ver, author)	(name##" "##ver##" by "##author)
 #define FILTER_INFO(name)	constexpr char filter_name[] = name, info[] = FILTER_INFO_FMT(name, PLUGIN_VERSION, PLUGIN_AUTHOR)
@@ -101,9 +101,9 @@ constexpr size_t size_col_fmt = std::wstring_view{ color_format }.size() + 1
 // exdata.
 constexpr ExEdit::ExdataUse exdata_use[] =
 {
-	{.type = ExEdit::ExdataUse::Type::Binary,  .size = 3, .name = "light" },
+	{.type = ExEdit::ExdataUse::Type::Binary,  .size = 3, .name = "color" },
 	{.type = ExEdit::ExdataUse::Type::Padding, .size = 1, .name = nullptr },
-	{.type = ExEdit::ExdataUse::Type::Binary,  .size = 3, .name = "shadow" },
+	{.type = ExEdit::ExdataUse::Type::Binary,  .size = 3, .name = "color2" },
 	{.type = ExEdit::ExdataUse::Type::Padding, .size = 1, .name = nullptr },
 };
 namespace idx_data
@@ -118,8 +118,8 @@ namespace idx_data
 		}
 	}
 	enum id : int {
-		light = _impl::idx("light"),
-		shadow = _impl::idx("shadow"),
+		light = _impl::idx("color"),
+		shadow = _impl::idx("color2"),
 	};
 	constexpr int count_entries = 2;
 }
